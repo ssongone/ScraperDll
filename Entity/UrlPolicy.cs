@@ -33,7 +33,8 @@ namespace ScraperDll.Entity
         {
             if (option == 0)
                 return PolicyString.URL_LIST_MAGAZINE;
-            
+
+            option = option * 20;
             string result = $"?listcnt={option}";
             return PolicyString.URL_LIST_MAGAZINE + result;
         }
