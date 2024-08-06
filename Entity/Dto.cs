@@ -2,13 +2,14 @@
 {
     public class PublicationSummary
     {
-        public string Name { get; set; }
+        public string Title { get; set; }
         public string Url { get; set; }
 
+        public PublicationSummary() { }
 
-        public PublicationSummary(string name, string url)
+        public PublicationSummary(string title, string url)
         {
-            Name = name;
+            Title = title;
             Url = url;
         }
     }
