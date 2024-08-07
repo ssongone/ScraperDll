@@ -11,11 +11,11 @@ namespace ScraperDll.Entity
 
     public interface ScrapeService { 
         public string GenerateListUrl(int option);
-        public Task<List<Publication>> GetPublicationDetailListAsync(List<PublicationSummary> summaries);
-
-        public Publication ConvertSummaryToBook(PublicationSummary summary);
-        public string GenerateDescription(HtmlDocument documen);
-
+        public Publication ConvertSummaryToPublication(PublicationSummary summary, HtmlDocument document);
+        //public string GenerateDescription(Publication publication, HtmlDocument document);
+        
+        public string GenerateDescriptionTable(Publication publication);
+        public string GenerateDescriptionDetail(HtmlDocument document);
     }
 
     public class BookService : ScrapeService
@@ -27,18 +27,15 @@ namespace ScraperDll.Entity
             return PolicyString.URL_LIST_BOOK + result;
         }
 
-        public async Task<List<Book>> GetPublicationDetailListAsync(List<PublicationSummary> summaries)
+/*        public async Task<List<Book>> GetPublicationDetailListAsync(List<PublicationSummary> summaries)
         {
             List<Book> books = new List<Book>(summaries.Count);
             return books;
-        }
+        }*/
 
-        private Publication ConvertSummaryToBookAsync(PublicationSummary summary)
+        public Publication ConvertSummaryToPublication(PublicationSummary summary, HtmlDocument document)
         {
-            Book book = new Book();
-
-            HtmlWeb web = new HtmlWeb();
-            HtmlDocument document = web.Load(summary.Url);
+            Publication book = new Publication();
 
             string title = book.ScrapeText(document, "p.itemTitle");
             string author = book.ScrapeText(document, "ui.AuthorsName");
@@ -57,23 +54,16 @@ namespace ScraperDll.Entity
             book.MainImageUrl = mainImageUrl;
             book.ISBN = ISBN;
             book.Price = ((int.Parse(price) * ScraperConfig.BOOK_MARGIN) / 10 * 10).ToString();
-            book.Description = GenerateDescription(document, book);
 
             return book;
         }
 
-        public string GenerateDescription(HtmlDocument document, Book book)
+        public string GenerateDescriptionTable(Publication publication)
         {
-            String description = book.CreateImgTag();
-            description += makeBookDescriptionTable(bookInfo);
-            description += "<br><br>";
-            description += makeBookDescriptionDetail(document);
-
-            description += ScraperConfig.DEFAULT_IMAGE_URL;
-            return description;
+            return "";
         }
-
-        private string CreateImageTag(string mainImageUrl)
+        
+        public string GenerateDescriptionDetail(HtmlDocument document)
         {
             return "";
         }
@@ -92,18 +82,20 @@ namespace ScraperDll.Entity
             string result = $"?listcnt={option}";
             return PolicyString.URL_LIST_MAGAZINE + result;
         }
-
-        public async Task<List<Publication>> GetPublicationDetailListAsync(List<PublicationSummary> summaries)
+        public Publication ConvertSummaryToPublication(PublicationSummary summary, HtmlDocument document)
         {
-            List<Publication> magazines = new List<Publication>(summaries.Count);
-            return magazines;
+            Publication publication = new Publication();
+            return publication;
         }
 
-        private async Task<Publication> ConvertSummaryToMagazineAsync(PublicationSummary summary)
+        public string GenerateDescriptionTable(Publication publication)
         {
-            Magazine magazine = new Magazine();
-  
-            return magazine;
+            return "";
+        }
+
+        public string GenerateDescriptionDetail(HtmlDocument document)
+        {
+            return "";
         }
     }
 

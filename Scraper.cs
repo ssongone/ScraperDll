@@ -1,5 +1,7 @@
 ﻿using HtmlAgilityPack;
 using ScraperDll.Entity;
+using System;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace ScraperDll
@@ -13,22 +15,6 @@ namespace ScraperDll
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // 인코딩 등록
             this.scrapeService = scrapeService;
-        }
-
-        public async Task<HtmlDocument> GetDocumentAsync(string url)
-        {
-            HttpResponseMessage response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-
-            var contentStream = await response.Content.ReadAsStreamAsync();
-
-            using (var reader = new StreamReader(contentStream, Encoding.GetEncoding("shift_jis")))
-            {
-                string pageContents = await reader.ReadToEndAsync();
-                var document = new HtmlDocument();
-                document.LoadHtml(pageContents);
-                return document;
-            }
         }
 
         public async Task<List<PublicationSummary>> ScrapeRankingPage(int option)
@@ -50,6 +36,38 @@ namespace ScraperDll
 
             return result;
         }
+        private async Task<HtmlDocument> GetDocumentAsyncWithNew(string url)
+        {
+            HttpClient c = new HttpClient();
+            HttpResponseMessage response = await c.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var contentStream = await response.Content.ReadAsStreamAsync();
+
+            using (var reader = new StreamReader(contentStream, Encoding.GetEncoding("shift_jis")))
+            {
+                string pageContents = await reader.ReadToEndAsync();
+                var document = new HtmlDocument();
+                document.LoadHtml(pageContents);
+                return document;
+            }
+        }
+
+        private async Task<HtmlDocument> GetDocumentAsync(string url)
+        {
+            HttpResponseMessage response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var contentStream = await response.Content.ReadAsStreamAsync();
+
+            using (var reader = new StreamReader(contentStream, Encoding.GetEncoding("shift_jis")))
+            {
+                string pageContents = await reader.ReadToEndAsync();
+                var document = new HtmlDocument();
+                document.LoadHtml(pageContents);
+                return document;
+            }
+        }
 
         public async Task<List<Publication>> ScrapePublicationDetail(List<PublicationSummary> summaries)
         {
@@ -68,43 +86,45 @@ namespace ScraperDll
             foreach (var summary in summaries)
             {
                 var publication = await SummaryToPublication(summary);
+                //var publication = await SummaryToPublicationAsync(summary);
                 yield return publication;
             }
         }
-
-        private async Task SummaryToPublication(PublicationSummary summary)
+        private async Task<Publication> SummaryToPublication(PublicationSummary summary)
         {
-            Publication publication = scrapeService.ConvertSummaryToBook(summary);
+            HtmlDocument document = await GetDocumentAsyncWithNew(summary.Url);
+
+            Publication publication = scrapeService.ConvertSummaryToPublication(summary, document);
+            GenerateDescription(publication, document);
+            return publication;
         }
 
 
-        private Publication ConvertSummaryToBookAsync(PublicationSummary summary)
+        private async Task<Publication> SummaryToPublicationAsync(PublicationSummary summary)
         {
-            Publication book = new Publication();
+            using HttpClient httpClient = new HttpClient();
+            var htmlContent = await httpClient.GetStringAsync(summary.Url);
+            var document = new HtmlDocument();
+            document.LoadHtml(htmlContent);
+            Publication publication = scrapeService.ConvertSummaryToPublication(summary, document);
+            GenerateDescription(publication, document);
+            return publication;
+        }
 
-            HtmlWeb web = new HtmlWeb();
-            HtmlDocument document = web.Load(summary.Url);
+        private void GenerateDescription(Publication publication, HtmlDocument document)
+        {
+            String description = CreateImgTag(publication.MainImageUrl);
+            //description += scrapeService.GenerateDescriptionTable(publication);
+            description += "<br><br>";
+            //description += scrapeService.GenerateDescriptionDetail(document);
 
-            string title = book.ScrapeText(document, "p.itemTitle");
-            string author = book.ScrapeText(document, "ui.AuthorsName");
-            string date = book.ScrapeDate(document);
-            string page = book.ScrapeText(document, "div.mainItemTable tr:contains(頁数) td");
-            string ISBN = book.ScrapeText(document, "//div[contains(@class, 'mainItemTable')]//tr[td[contains(text(), 'ISBN')]]//span[contains(@class, 'codeSelect')]");
-            string price = book.ScrapePrice(document);
-            string publisher = book.ScrapeText(document, "div.mainItemTable tr:contains(出版社名) td");
-            string mainImageUrl = book.ScrapeMainImageUrl(document);
+            description += ScraperConfig.DEFAULT_IMAGE_URL;
+            publication.Description = description;
+        }
 
-            book.Title = title;
-            book.Author = author;
-            book.Date = date;
-            book.Page = page;
-            book.Publisher = publisher;
-            book.MainImageUrl = mainImageUrl;
-            book.ISBN = ISBN;
-            book.Price = ((int.Parse(price) * ScraperConfig.BOOK_MARGIN) / 10 * 10).ToString();
-            book.Description = GenerateDescription(document, book);
-
-            return book;
+        public string CreateImgTag(string imgUrl)
+        {
+            return "<img src=\"" + imgUrl + "\">";
         }
 
     }

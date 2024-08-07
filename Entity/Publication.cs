@@ -64,15 +64,6 @@ namespace ScraperDll.Entity
             return questionMarkIndex != -1 ? src.Substring(0, questionMarkIndex) : src;
         }
 
-        public string CreateImgTag()
-        {
-            StringBuilder imgTagBuilder = new StringBuilder();
-
-            imgTagBuilder.Append("<img src=\"").Append(MainImageUrl).Append("\">");
-
-            return imgTagBuilder.ToString();
-        }
-
     }
 
 }
