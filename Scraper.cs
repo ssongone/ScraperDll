@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using ScraperDll.Entity;
 using System;
+using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Text;
 
@@ -20,8 +21,8 @@ namespace ScraperDll
         public async Task<List<PublicationSummary>> ScrapeRankingPage(int option)
         {
             string url = scrapeService.GenerateListUrl(option);
-            HtmlDocument document = await GetDocumentAsync(url);
-            
+            HtmlDocument document = await GetDocumentAsyncWithNew(url);
+            Debug.WriteLine(document);
             // nodes null이면 에러 처리
             var nodes = document.DocumentNode.SelectNodes("//div[@id='contents']//div[@class='detail']//p[@class='title']//a");
 
@@ -36,10 +37,15 @@ namespace ScraperDll
 
             return result;
         }
-        private async Task<HtmlDocument> GetDocumentAsyncWithNew(string url)
+        public async Task<HtmlDocument> GetDocumentAsyncWithNew(string url)
         {
             HttpClient c = new HttpClient();
+            c.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml,text/javascript, */*; q=0.01");
+            c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36 OPR/67.0.3575.137");
+            c.DefaultRequestHeaders.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
+            c.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "keep-alive");
             HttpResponseMessage response = await c.GetAsync(url);
+
             response.EnsureSuccessStatusCode();
 
             var contentStream = await response.Content.ReadAsStreamAsync();
@@ -53,7 +59,7 @@ namespace ScraperDll
             }
         }
 
-        private async Task<HtmlDocument> GetDocumentAsync(string url)
+        public async Task<HtmlDocument> GetDocumentAsync(string url)
         {
             HttpResponseMessage response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
@@ -81,7 +87,7 @@ namespace ScraperDll
             return publications;
         }
 
-        private async IAsyncEnumerable<Publication> ProcessSummariesAsync(IEnumerable<PublicationSummary> summaries)
+        public async IAsyncEnumerable<Publication> ProcessSummariesAsync(IEnumerable<PublicationSummary> summaries)
         {
             foreach (var summary in summaries)
             {
@@ -90,10 +96,10 @@ namespace ScraperDll
                 yield return publication;
             }
         }
-        private async Task<Publication> SummaryToPublication(PublicationSummary summary)
+        public async Task<Publication> SummaryToPublication(PublicationSummary summary)
         {
             HtmlDocument document = await GetDocumentAsyncWithNew(summary.Url);
-
+            Debug.WriteLine(document.DocumentNode.OuterHtml);
             Publication publication = scrapeService.ConvertSummaryToPublication(summary, document);
             GenerateDescription(publication, document);
             return publication;

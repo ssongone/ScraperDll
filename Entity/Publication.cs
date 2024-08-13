@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,7 +49,9 @@ namespace ScraperDll.Entity
 
         public string ScrapePrice(HtmlDocument document)
         {
-            var node = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'mainItemTable')]//tr[td[contains(text(), '税込価格')]]/td");
+            var node = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'mainItemTable')]//tr[th[contains(text(), '税込価格')]]//td");
+            Debug.WriteLine(node.InnerText);
+
             return node?.InnerText.Trim()
                 .Replace(",", "")
                 .Replace("円", "") ?? string.Empty;
