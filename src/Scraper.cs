@@ -10,12 +10,12 @@ namespace ScraperDll
     public class Scraper
     {
         private HttpClient client = new HttpClient();
-        private ScrapeService scrapeService;
+        private ScrapePolicy scrapePolicy;
 
-        public Scraper(ScrapeService scrapeService) 
+        public Scraper(ScrapePolicy scrapePolicy) 
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // 인코딩 등록
-            this.scrapeService = scrapeService;
+            this.scrapePolicy = scrapePolicy;
             client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml,text/javascript, */*; q=0.01");
             client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36 OPR/67.0.3575.137");
             client.DefaultRequestHeaders.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
@@ -24,7 +24,7 @@ namespace ScraperDll
 
         public async Task<List<PublicationSummary>> ScrapeRankingPage(int option)
         {
-            string url = scrapeService.GenerateListUrl(option);
+            string url = scrapePolicy.GenerateListUrl(option);
             HtmlDocument document = await GetDocumentAsync(url);
             Debug.WriteLine(document);
             // nodes null이면 에러 처리
@@ -101,7 +101,7 @@ namespace ScraperDll
         {
             HtmlDocument document = await GetDocumentAsync(summary.Url);
             Debug.WriteLine(document.DocumentNode.OuterHtml);
-            Publication publication = scrapeService.ConvertSummaryToPublication(summary, document);
+            Publication publication = scrapePolicy.ConvertSummaryToPublication(summary, document);
             GenerateDescription(publication, document);
             return publication;
         }
@@ -109,11 +109,13 @@ namespace ScraperDll
         private void GenerateDescription(Publication publication, HtmlDocument document)
         {
             String description = CreateImgTag(publication.MainImageUrl);
-            //description += scrapeService.GenerateDescriptionTable(publication);
             description += "<br><br>";
-            //description += scrapeService.GenerateDescriptionDetail(document);
+            description += scrapePolicy.GenerateDescriptionTable(publication);
+            description += "<br><br>";
+            description += scrapePolicy.GenerateDescriptionDetail(document);
+            description += "<br><br>";
 
-            description += ScraperConfig.DEFAULT_IMAGE_URL;
+            description += CreateImgTag(ScraperConfig.DEFAULT_IMAGE_URL);
             publication.Description = description;
         }
 

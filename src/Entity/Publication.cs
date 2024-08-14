@@ -19,7 +19,7 @@ namespace ScraperDll.Entity
         public string Date { get; set; }
         public string Author { get; set; }
         public string Page { get; set; }
-        private string Jan { get; set; }
+        public string Jan { get; set; }
 
         public string ScrapeText(HtmlDocument document, string tag)
         {
@@ -27,10 +27,11 @@ namespace ScraperDll.Entity
             return node?.InnerText.Trim() ?? string.Empty;
         }
 
-        public string ScrapeDate(HtmlDocument document)
+        public string ScrapeDate(HtmlDocument document, string tag)
         {
-            var node = document.DocumentNode.SelectSingleNode("//div[@class='mainItemTable']//tr[th[text()='出版年月']]//td");
-            if (node == null) return string.Empty;
+            string xpath = $"//div[@class='mainItemTable']//tr[th[contains(text(), '{tag}')]]//td";
+            var node = document.DocumentNode.SelectSingleNode(xpath);
+            if (node == null) return String.Empty;
 
             string result = node.InnerText.Trim()
                 .Replace("年", "-")
@@ -38,7 +39,7 @@ namespace ScraperDll.Entity
 
             if (result.Contains("日"))
             {
-                result.Replace("日", "");
+                result = result.Replace("日", "");
             } else
             {
                 result += "1";
