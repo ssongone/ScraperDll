@@ -9,19 +9,23 @@ namespace ScraperDll
 {
     public class Scraper
     {
-        private static readonly HttpClient client = new HttpClient();
+        private HttpClient client = new HttpClient();
         private ScrapeService scrapeService;
 
         public Scraper(ScrapeService scrapeService) 
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // 인코딩 등록
             this.scrapeService = scrapeService;
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml,text/javascript, */*; q=0.01");
+            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36 OPR/67.0.3575.137");
+            client.DefaultRequestHeaders.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "keep-alive");
         }
 
         public async Task<List<PublicationSummary>> ScrapeRankingPage(int option)
         {
             string url = scrapeService.GenerateListUrl(option);
-            HtmlDocument document = await GetDocumentAsyncWithNew(url);
+            HtmlDocument document = await GetDocumentAsync(url);
             Debug.WriteLine(document);
             // nodes null이면 에러 처리
             var nodes = document.DocumentNode.SelectNodes("//div[@id='contents']//div[@class='detail']//p[@class='title']//a");
@@ -36,27 +40,6 @@ namespace ScraperDll
             }
 
             return result;
-        }
-        public async Task<HtmlDocument> GetDocumentAsyncWithNew(string url)
-        {
-            HttpClient c = new HttpClient();
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml,text/javascript, */*; q=0.01");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36 OPR/67.0.3575.137");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "keep-alive");
-            HttpResponseMessage response = await c.GetAsync(url);
-
-            response.EnsureSuccessStatusCode();
-
-            var contentStream = await response.Content.ReadAsStreamAsync();
-
-            using (var reader = new StreamReader(contentStream, Encoding.GetEncoding("shift_jis")))
-            {
-                string pageContents = await reader.ReadToEndAsync();
-                var document = new HtmlDocument();
-                document.LoadHtml(pageContents);
-                return document;
-            }
         }
 
         public async Task<HtmlDocument> GetDocumentAsync(string url)
@@ -75,6 +58,24 @@ namespace ScraperDll
             }
         }
 
+        public async Task<List<Publication>> ScrapePublicationDetailParallel(List<PublicationSummary> summaries)
+        {
+            var publications = new List<Publication>(summaries.Count);
+
+            var tasks = summaries.Select(async summary =>
+            {
+                var publication = await SummaryToPublication(summary);
+                return publication;
+            });
+
+            var results = await Task.WhenAll(tasks);
+
+            publications.AddRange(results);
+
+            return publications;
+        }
+
+
         public async Task<List<Publication>> ScrapePublicationDetail(List<PublicationSummary> summaries)
         {
             var publications = new List<Publication>(summaries.Count);
@@ -91,27 +92,15 @@ namespace ScraperDll
         {
             foreach (var summary in summaries)
             {
+                Debug.WriteLine(summary.Url);
                 var publication = await SummaryToPublication(summary);
-                //var publication = await SummaryToPublicationAsync(summary);
                 yield return publication;
             }
         }
         public async Task<Publication> SummaryToPublication(PublicationSummary summary)
         {
-            HtmlDocument document = await GetDocumentAsyncWithNew(summary.Url);
+            HtmlDocument document = await GetDocumentAsync(summary.Url);
             Debug.WriteLine(document.DocumentNode.OuterHtml);
-            Publication publication = scrapeService.ConvertSummaryToPublication(summary, document);
-            GenerateDescription(publication, document);
-            return publication;
-        }
-
-
-        private async Task<Publication> SummaryToPublicationAsync(PublicationSummary summary)
-        {
-            using HttpClient httpClient = new HttpClient();
-            var htmlContent = await httpClient.GetStringAsync(summary.Url);
-            var document = new HtmlDocument();
-            document.LoadHtml(htmlContent);
             Publication publication = scrapeService.ConvertSummaryToPublication(summary, document);
             GenerateDescription(publication, document);
             return publication;

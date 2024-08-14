@@ -29,7 +29,7 @@ namespace ScraperDll.Entity
 
         public string ScrapeDate(HtmlDocument document)
         {
-            var node = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'mainItemTable')]//tr[td[contains(text(), '出版年月')]]/td");
+            var node = document.DocumentNode.SelectSingleNode("//div[@class='mainItemTable']//tr[th[text()='出版年月']]//td");
             if (node == null) return string.Empty;
 
             string result = node.InnerText.Trim()
@@ -50,7 +50,6 @@ namespace ScraperDll.Entity
         public string ScrapePrice(HtmlDocument document)
         {
             var node = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'mainItemTable')]//tr[th[contains(text(), '税込価格')]]//td");
-            Debug.WriteLine(node.InnerText);
 
             return node?.InnerText.Trim()
                 .Replace(",", "")
@@ -67,6 +66,18 @@ namespace ScraperDll.Entity
             return questionMarkIndex != -1 ? src.Substring(0, questionMarkIndex) : src;
         }
 
+        public override string ToString()
+        {
+            return $"Title: {Title}\n" +
+                   $"Price: {Price}\n" +
+                   $"Publisher: {Publisher}\n" +
+                   $"Main Image URL: {MainImageUrl}\n" +
+                   $"Description: {Description}\n" +
+                   $"ISBN: {ISBN}\n" +
+                   $"Date: {Date}\n" +
+                   $"Author: {Author}\n" +
+                   $"Page: {Page}\n" +
+                   $"Jan: {Jan}";
+        }
     }
-
 }

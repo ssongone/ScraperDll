@@ -38,12 +38,12 @@ namespace ScraperDll.Entity
             Publication book = new Publication();
 
             string title = book.ScrapeText(document, "//p[@class='itemTitle']");
-            string author = book.ScrapeText(document, "//div[@class='ui AuthorsName']");
+            string author = book.ScrapeText(document, "//ul[@class='AuthorsName']//a"); 
             string date = book.ScrapeDate(document);
-            string page = book.ScrapeText(document, "//div[@class='mainItemTable']//tr[contains(text(), '頁数')]//td");
-            string ISBN = book.ScrapeText(document, "//div[contains(@class, 'mainItemTable')]//tr[td[contains(text(), 'ISBN')]]//span[contains(@class, 'codeSelect')]");
+            string page = book.ScrapeText(document, "//div[@class='mainItemTable']//tr[th[contains(text(), '頁数')]]//td");
+            string ISBN = book.ScrapeText(document, "//div[@class='mainItemTable']//tr[th[contains(text(), 'ISBNコード')]]//span[@class='codeSelect']");
             string price = book.ScrapePrice(document); 
-            string publisher = book.ScrapeText(document, "/div[@class='mainItemTable']//tr[td[contains(text(), '出版社名')]]");
+            string publisher = book.ScrapeText(document, "//div[@class='mainItemTable']//tr[th[contains(text(), '出版社名')]]//td");
             string mainImageUrl = book.ScrapeMainImageUrl(document);
 
             book.Title = title;
