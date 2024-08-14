@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -17,12 +17,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ScraperDll\ScraperDll.csproj" />
-    <ProjectReference Include="..\src\ScraperDll.csproj" />
+    <Reference Include="ScraperDll">
+      <HintPath>..\src\bin\Debug\net8.0\ScraperDll.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.61" />
+	</ItemGroup>
+
 
 </Project>
