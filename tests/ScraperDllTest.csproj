@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ScraperDll\ScraperDll.csproj" />
+    <ProjectReference Include="..\src\ScraperDll.csproj" />
   </ItemGroup>
 
   <ItemGroup>

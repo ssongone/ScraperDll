@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScraperDll", "ScraperDll.csproj", "{0682E859-4B8D-4405-BF27-FAABBA09A20A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScraperDll", "src\ScraperDll.csproj", "{0682E859-4B8D-4405-BF27-FAABBA09A20A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScraperDllTest", "..\ScraperDllTest\ScraperDllTest.csproj", "{C4618925-772C-4D93-AE39-8C4BCFF487F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScraperDllTest", "tests\ScraperDllTest.csproj", "{C4618925-772C-4D93-AE39-8C4BCFF487F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

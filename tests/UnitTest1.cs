@@ -1,12 +1,7 @@
 ﻿using HtmlAgilityPack;
-using Microsoft.VisualBasic.FileIO;
 using ScraperDll;
 using ScraperDll.Entity;
-using System;
 using System.Diagnostics;
-using System.Net;
-using System.Reflection.Metadata;
-
 
 namespace ScraperDllTest
 {
@@ -42,8 +37,8 @@ namespace ScraperDllTest
             Scraper scraper = new Scraper(new BookService());
             List<PublicationSummary> summaries = await scraper.ScrapeRankingPage(1);
             var result = await scraper.ScrapePublicationDetail(summaries);
-            foreach (Publication r in result) 
-            { 
+            foreach (Publication r in result)
+            {
                 Debug.WriteLine(r.Title);
             }
 
