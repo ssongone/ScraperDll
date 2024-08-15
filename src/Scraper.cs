@@ -2,6 +2,7 @@
 using ScraperDll.Entity;
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Reflection.Metadata;
 using System.Text;
 
@@ -9,13 +10,22 @@ namespace ScraperDll
 {
     public class Scraper
     {
-        private HttpClient client = new HttpClient();
+        private HttpClient client;
         private ScrapePolicy scrapePolicy;
 
         public Scraper(ScrapePolicy scrapePolicy) 
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // 인코딩 등록
             this.scrapePolicy = scrapePolicy;
+
+            var cookieContainer = new CookieContainer();
+            cookieContainer.Add(new Uri("https://www.e-hon.ne.jp"), new Cookie("e-hon_age_credential", "1"));
+            var handler = new HttpClientHandler
+            {
+                CookieContainer = cookieContainer
+            };
+            client = new HttpClient(handler);
+
             client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml,text/javascript, */*; q=0.01");
             client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36 OPR/67.0.3575.137");
             client.DefaultRequestHeaders.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
@@ -26,12 +36,11 @@ namespace ScraperDll
         {
             string url = scrapePolicy.GenerateListUrl(option);
             HtmlDocument document = await GetDocumentAsync(url);
-            Debug.WriteLine(document);
+
             // nodes null이면 에러 처리
-            var nodes = document.DocumentNode.SelectNodes("//div[@id='contents']//div[@class='detail']//p[@class='title']//a");
+            var nodes = document.DocumentNode.SelectNodes("//div[@id='contents']//div[@class='detail']//p[@class='title']/a");
 
             var result = new List<PublicationSummary>();
-
             foreach (var node in nodes) 
             {
                 string name = node.InnerText;

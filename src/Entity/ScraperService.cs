@@ -71,11 +71,12 @@ namespace ScraperDll.Entity
             StringBuilder builder = new StringBuilder();
 
             var authorContents = document.DocumentNode.SelectNodes("//div[@class='authorContents']//dl[@class='authorDescList']");
-            var itemDetailTable = document.DocumentNode.SelectSingleNode("//div[@class='itemDetailTable']//tr[contains(., '要旨')]//td");
-            var itemDetailTable2 = document.DocumentNode.SelectSingleNode("//div[@class='itemDetailTable']//tr[contains(., '目次')]//td");
-            var itemDetailTable3 = document.DocumentNode.SelectSingleNode("//div[@class='itemDetailTable']//tr[contains(., '文学賞情報')]//td");
+            var itemDetailTable = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'itemDetailTable')]//tr[th[contains(text(), '要旨')]]//td");
+            var itemDetailTable2 = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'itemDetailTable')]//tr[th[contains(text(), '目次')]]//td");
+            var itemDetailTable3 = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'itemDetailTable')]//tr[th[contains(text(), '文学賞情報')]]//td");
             var commentContents = document.DocumentNode.SelectSingleNode("//div[@class='commentContents']//div[@class='commentDetail']");
             var netGalleyReviews = document.DocumentNode.SelectNodes("//div[@id='netgalley']//div[@class='tx_area01']//div[@class='review']");
+            var reviewContents = document.DocumentNode.SelectSingleNode("//div[@class='reviewContents']");
 
             if (authorContents != null && authorContents.Count > 0)
             {
@@ -128,6 +129,33 @@ namespace ScraperDll.Entity
                     builder.AppendLine("<br>");
                 }
                 builder.AppendLine("<br><br>");
+            }
+
+            if (reviewContents != null)
+            {
+                var reviewItems = reviewContents.SelectNodes(".//dl[@class='toggleWrap02 typeReview']//li");
+                if (reviewItems != null && reviewItems.Count > 0)
+                {
+                    builder.AppendLine("<h2 class=\"heading02\">서점 리뷰</h2>");
+                    foreach (var item in reviewItems)
+                    {
+                        // 리뷰 제목
+                        var reviewTitle = item.SelectSingleNode(".//p[@class='reviewTitle']")?.InnerText.Trim();
+                        // 추천도 및 서점
+                        var reviewDetail = item.SelectSingleNode(".//ul[@class='reviewDetail']//li[@class='detailText']")?.InnerText.Trim();
+                        // 리뷰 텍스트
+                        var reviewText = item.SelectSingleNode(".//p[not(@class='reviewTitle')]")?.InnerText.Trim();
+                        // 리뷰 날짜
+                        var reviewDate = item.SelectSingleNode(".//p[contains(text(), '년')]")?.InnerText.Trim();
+
+                        builder.AppendLine("<div><strong>" + reviewTitle + "</strong><br>");
+                        builder.AppendLine(reviewDetail);
+                        builder.AppendLine("<br>" + reviewText);
+                        builder.AppendLine("<br><em>" + reviewDate + "</em></div>");
+                    }
+                    builder.AppendLine("<br><br>");
+                }
+
             }
 
             return builder.ToString();
@@ -186,9 +214,9 @@ namespace ScraperDll.Entity
 
         public string GenerateDescriptionDetail(HtmlDocument document)
         {
-            var firstSection = document.DocumentNode.SelectSingleNode("//div[@class='itemDetailTable']//tr[td[contains(text(), '雑誌銘柄情報')]]/td");
-            var secondSection = document.DocumentNode.SelectSingleNode("//div[@class='itemDetailTable']//tr[td[contains(text(), '特集情報')]]/td");
-            var thirdSection = document.DocumentNode.SelectSingleNode("//div[@class='itemDetailTable']//tr[td[contains(text(), '出版社情報')]]/td");
+            var firstSection = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'itemDetailTable')]//tr[th[contains(text(), '雑誌銘柄情報')]]//td//p");
+            var secondSection = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'itemDetailTable')]//tr[th[contains(text(), '特集情報')]]//td//p");
+            var thirdSection = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'itemDetailTable')]//tr[th[contains(text(), '出版社情報')]]//td//p");
             if (firstSection == null && secondSection == null && thirdSection == null)
             {
                 return "";

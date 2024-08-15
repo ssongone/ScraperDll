@@ -12,7 +12,11 @@ namespace ScraperDllTest
         {
             Scraper scraper = new Scraper(new MagazinePolicy());
             List<PublicationSummary> result = await scraper.ScrapeRankingPage(1);
-            Debug.WriteLine(result[0].Url);
+
+            foreach (PublicationSummary summary in result)
+            {
+                Debug.WriteLine(summary.Title);
+            }
             Assert.Equal(20, result.Count);
         }
 
@@ -40,9 +44,10 @@ namespace ScraperDllTest
         public async void MagazineDescription테스트()
         {
             Scraper scraper = new Scraper(new MagazinePolicy());
-            List<PublicationSummary> summaries = await scraper.ScrapeRankingPage(1);
-            var result = await scraper.ScrapePublicationDetailParallel(summaries);
-            Debug.WriteLine(result[0].Description);
+            string url = "https://www.e-hon.ne.jp/bec/SA/DetailZasshi?refShinCode=0900000004910077010948&Action_id=101&Sza_id=A0";
+            HtmlDocument document = await scraper.GetDocumentAsync(url);
+            Publication p = await scraper.SummaryToPublication(new PublicationSummary("", url));
+            Debug.WriteLine(p.Description);
         }
     }
 

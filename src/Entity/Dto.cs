@@ -4,7 +4,6 @@
     {
         public string Title { get; set; }
         public string Url { get; set; }
-
         public PublicationSummary() { }
 
         public PublicationSummary(string title, string url)
