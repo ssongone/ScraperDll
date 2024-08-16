@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace ScraperDll.Entity
 {
-    static class ScraperConfig
+    public static class ScraperConfig
     {
         public static string DEFAULT_IMAGE_URL = "기본 이미지 주소";
-        public static int BOOK_MARGIN = 12;
-        public static int MAGAZINE_MARGIN = 12;
+        public static decimal BOOK_MARGIN = 12;
+        public static decimal MAGAZINE_MARGIN = 12;
     }
 
     public static class ExcelConfig
