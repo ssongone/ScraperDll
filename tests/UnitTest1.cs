@@ -49,6 +49,19 @@ namespace ScraperDllTest
             Publication p = await scraper.SummaryToPublication(new PublicationSummary("", url));
             Debug.WriteLine(p.Description);
         }
+
+        [Fact]
+        public async void 도서엑셀내보내기()
+        {
+            Scraper scraper = new Scraper(new BookPolicy());
+            List<PublicationSummary> summaries = await scraper.ScrapeRankingPage(1);
+            var result = await scraper.ScrapePublicationDetailParallel(summaries);
+
+            ExcelExporter excelExporter = new ExcelExporter(true, 1);
+            string path = excelExporter.RegisterAtOnce(result);
+
+            Assert.True(File.Exists(path), $"엑셀 파일이 생성되지 않았습니다: {path}");
+        }
     }
 
     public class PerformanceTest
@@ -57,10 +70,12 @@ namespace ScraperDllTest
         public async void ScrapePublicationDetail순차()
         {
             Scraper scraper = new Scraper(new BookPolicy());
-            string url = "https://www.e-hon.ne.jp/bec/SA/DetailZasshi?refShinCode=0900000004910180390944&Action_id=101&Sza_id=A0";
-            HtmlDocument document = await scraper.GetDocumentAsync(url);
-            Publication p = await scraper.SummaryToPublication(new PublicationSummary("", url));
-            Debug.WriteLine(p.Description);
+            List<PublicationSummary> summaries = await scraper.ScrapeRankingPage(1);
+            var result = await scraper.ScrapePublicationDetail(summaries);
+            foreach (Publication r in result)
+            {
+                Debug.WriteLine(r.Title);
+            }
         }
 
         [Fact]
