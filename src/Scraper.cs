@@ -43,7 +43,7 @@ namespace ScraperDll
             var result = new List<PublicationSummary>();
             foreach (var node in nodes) 
             {
-                string name = node.InnerText;
+                string name = node.InnerText.Trim();
                 string hrefValue = node.GetAttributeValue("href", string.Empty);
                 result.Add(new PublicationSummary(name, hrefValue));
             }
