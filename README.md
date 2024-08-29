@@ -105,3 +105,10 @@ public class Scraper
 ```
 
 전략패턴을 적용하면서 Scraper 클래스는 세부적으로 어떻게 스크래핑 이루어지는지에는 관심을 두지 않고 메인로직에 집중할 수 있게 되었습니다.
+
+이건 이전에 짰던 자바함수들입니다.
+
+[![before.png](https://i.postimg.cc/TYBc7SWh/dd.png)](https://postimg.cc/GHJY9XK1)
+
+무지성으로 그냥 함수이름으로 구분하고 IF문으로 구분하는 식으로 했었는데 훨씬 나아지긴 한것 같습니다.
+
